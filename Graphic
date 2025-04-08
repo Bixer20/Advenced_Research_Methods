@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Heart Disease Prediction - Model Performance Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        h1 {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            margin: 10px auto 30px;
+            line-height: 1.4;
+        }
+        
+        /* Row layout styles */
+        .row {
+            display: flex;
+            margin-bottom: 20px;
+            clear: both;
+            width: 100%;
+        }
+        
+        /* Chart container styles */
+        .chart-box {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 10px;
+            margin: 0 10px;
+            flex: 1;
+        }
+        
+        .chart-container {
+            height: 300px;
+            width: 100%;
+        }
+        
+        .radar-container {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced Research Methods</h1>
+    <h2>A Comparative Study of Data Imbalance Techniques (SMOTE, ADASYN) in Predicting Heart Disease Using the Framingham Dataset</h2>
+    
+    <!-- First row: 3 charts side by side -->
+    <div class="row">
+        <div class="chart-box">
+            <div class="chart-container">
+                <canvas id="accuracyChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-container">
+                <canvas id="precisionChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-container">
+                <canvas id="recallChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second row: 2 charts side by side -->
+    <div class="row">
+        <div class="chart-box">
+            <div class="chart-container">
+                <canvas id="f1Chart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-container">
+                <canvas id="rocAucChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Third row: Radar chart -->
+    <div class="row">
+        <div class="chart-box" style="flex: 1;">
+            <div class="radar-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data from your table
+        const data = {
+            datasets: [
+                { label: 'Original - LR', accuracy: 0.85, precision: 0.44, recall: 0.06, f1: 0.10, rocAuc: 0.702, model: 'Logistic Regression', dataset: 'Original' },
+                { label: 'Original - RF', accuracy: 0.84, precision: 0.39, recall: 0.06, f1: 0.10, rocAuc: 0.643, model: 'Random Forest', dataset: 'Original' },
+                { label: 'Original - XGB', accuracy: 0.83, precision: 0.31, recall: 0.11, f1: 0.16, rocAuc: 0.622, model: 'XGBoost', dataset: 'Original' },
+                { label: 'SMOTE - LR', accuracy: 0.67, precision: 0.25, recall: 0.61, f1: 0.36, rocAuc: 0.697, model: 'Logistic Regression', dataset: 'SMOTE' },
+                { label: 'SMOTE - RF', accuracy: 0.80, precision: 0.30, recall: 0.23, f1: 0.26, rocAuc: 0.663, model: 'Random Forest', dataset: 'SMOTE' },
+                { label: 'SMOTE - XGB', accuracy: 0.81, precision: 0.30, recall: 0.17, f1: 0.21, rocAuc: 0.646, model: 'XGBoost', dataset: 'SMOTE' },
+                { label: 'ADASYN - LR', accuracy: 0.64, precision: 0.24, recall: 0.64, f1: 0.35, rocAuc: 0.697, model: 'Logistic Regression', dataset: 'ADASYN' },
+                { label: 'ADASYN - RF', accuracy: 0.80, precision: 0.28, recall: 0.22, f1: 0.25, rocAuc: 0.655, model: 'Random Forest', dataset: 'ADASYN' },
+                { label: 'ADASYN - XGB', accuracy: 0.81, precision: 0.30, recall: 0.19, f1: 0.23, rocAuc: 0.640, model: 'XGBoost', dataset: 'ADASYN' }
+            ]
+        };
+
+        // Custom colors for bar charts (same color per dataset type)
+        const barColorPalette = {
+            'Original': 'rgba(255, 99, 132, 0.7)',
+            'SMOTE': 'rgba(75, 192, 192, 0.7)',
+            'ADASYN': 'rgba(80, 200, 120, 0.7)'
+        };
+        
+        // Custom colors for radar chart (different colors for each model-dataset combination)
+        const radarColorPalette = {
+            'Original - LR': 'rgba(255, 99, 132, 0.7)',
+            'Original - RF': 'rgba(54, 162, 235, 0.7)',
+            'Original - XGB': 'rgba(255, 206, 86, 0.7)',
+            'SMOTE - LR': 'rgba(75, 192, 192, 0.7)',
+            'SMOTE - RF': 'rgba(153, 102, 255, 0.7)',
+            'SMOTE - XGB': 'rgba(255, 159, 64, 0.7)',
+            'ADASYN - LR': 'rgba(199, 0, 57, 0.7)',
+            'ADASYN - RF': 'rgba(46, 49, 146, 0.7)',
+            'ADASYN - XGB': 'rgba(80, 200, 120, 0.7)'
+        };
+        
+        // Group by dataset and model for better display
+        const datasets = [...new Set(data.datasets.map(d => d.dataset))];
+        const models = [...new Set(data.datasets.map(d => d.model))];
+        
+        // Prepare data for bar charts
+        function prepareBarChartData(metric) {
+            const labels = models;
+            const chartData = {
+                labels: labels,
+                datasets: datasets.map(dataset => ({
+                    label: dataset,
+                    data: models.map(model => 
+                        data.datasets.find(d => d.dataset === dataset && d.model === model)[metric]
+                    ),
+                    backgroundColor: barColorPalette[dataset],
+                    borderColor: barColorPalette[dataset].replace('0.7', '1'),
+                    borderWidth: 1
+                }))
+            };
+            return chartData;
+        }
+
+        // Common chart options
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 10,
+                        font: { size: 10 }
+                    }
+                }
+            }
+        };
+
+        // Create accuracy chart
+        const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
+        new Chart(accuracyCtx, {
+            type: 'bar',
+            data: prepareBarChartData('accuracy'),
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    title: {
+                        display: true,
+                        text: 'Accuracy Comparison',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1,
+                        title: {
+                            display: true,
+                            text: 'Accuracy'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Model'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Create precision chart
+        const precisionCtx = document.getElementById('precisionChart').getContext('2d');
+        new Chart(precisionCtx, {
+            type: 'bar',
+            data: prepareBarChartData('precision'),
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    title: {
+                        display: true,
+                        text: 'Precision (Class 1) Comparison',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 0.5,
+                        title: {
+                            display: true,
+                            text: 'Precision'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Model'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Create recall chart
+        const recallCtx = document.getElementById('recallChart').getContext('2d');
+        new Chart(recallCtx, {
+            type: 'bar',
+            data: prepareBarChartData('recall'),
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    title: {
+                        display: true,
+                        text: 'Recall (Class 1) Comparison',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 0.7,
+                        title: {
+                            display: true,
+                            text: 'Recall'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Model'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Create F1 Score chart
+        const f1Ctx = document.getElementById('f1Chart').getContext('2d');
+        new Chart(f1Ctx, {
+            type: 'bar',
+            data: prepareBarChartData('f1'),
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    title: {
+                        display: true,
+                        text: 'F1-Score (Class 1) Comparison',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 0.4,
+                        title: {
+                            display: true,
+                            text: 'F1-Score'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Model'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Create ROC-AUC chart
+        const rocAucCtx = document.getElementById('rocAucChart').getContext('2d');
+        new Chart(rocAucCtx, {
+            type: 'bar',
+            data: prepareBarChartData('rocAuc'),
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    title: {
+                        display: true,
+                        text: 'ROC-AUC Comparison',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        min: 0.6,
+                        max: 0.75,
+                        title: {
+                            display: true,
+                            text: 'ROC-AUC'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Model'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Create radar chart - comparing all models with distinct colors
+        const radarCtx = document.getElementById('radarChart').getContext('2d');
+        const radarData = {
+            labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score', 'ROC-AUC'],
+            datasets: data.datasets.map(d => ({
+                label: d.label,
+                data: [d.accuracy, d.precision, d.recall, d.f1, d.rocAuc],
+                backgroundColor: radarColorPalette[d.label].replace('0.7', '0.2'),
+                borderColor: radarColorPalette[d.label].replace('0.7', '1'),
+                borderWidth: 2,
+                pointBackgroundColor: radarColorPalette[d.label].replace('0.7', '1'),
+                pointRadius: 4
+            }))
+        };
+
+        new Chart(radarCtx, {
+            type: 'radar',
+            data: radarData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Model Performance Radar',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    legend: {
+                        position: 'right',
+                        align: 'start',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 1
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

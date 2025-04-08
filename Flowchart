@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Processing Flow Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        h1 {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            max-width: 900px;
+            margin: 10px auto 30px;
+            line-height: 1.4;
+        }
+        .flow-chart-container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced Research Methods</h1>
+    <h2>A Comparative Study of Data Imbalance Techniques (SMOTE, ADASYN) in Predicting Heart Disease Using the Framingham Dataset</h2>
+    
+    <div class="flow-chart-container">
+        <div class="mermaid">
+        flowchart TD
+            A[Framingham Dataset] --> B[Data Preprocessing]
+            
+            subgraph B[Data Preprocessing]
+                B1[Missing Value Imputation<br>median] --> B2[Feature Scaling]
+                B2 --> B3[70% Training<br>30% Testing]
+            end
+            
+            B --> C["Data Resampling Technique"]
+            
+            subgraph C["Data Resampling Technique"]
+                C1[Original Dataset<br>Class Imbalance: 1079:193]
+                C2[SMOTE Resampled Dataset<br>Balanced Classes]
+                C3[ADASYN Resampled Dataset<br>Balanced Classes]
+            end
+            
+            C --> D[Classification Models]
+            
+            subgraph D[Classification Models]
+                D1[Logistic Regression]
+                D2[Random Forest]
+                D3[XGBoost]
+            end
+            
+            D --> F[Performance Evaluation<br>Accuracy, Precision, Recall<br>F1-Score, ROC-AUC]
+            
+            style A fill:#f9d5e5,stroke:#333,stroke-width:2px
+            style B fill:#eeeeee,stroke:#333,stroke-width:1px
+            style C fill:#d3f0ee,stroke:#333,stroke-width:1px
+            style D fill:#e3f0d3,stroke:#333,stroke-width:1px
+            style F fill:#f0e6f3,stroke:#333,stroke-width:1px
+            
+            style B1 fill:#f5f5f5,stroke:#666,stroke-width:1px
+            style B2 fill:#f5f5f5,stroke:#666,stroke-width:1px
+            style B3 fill:#f5f5f5,stroke:#666,stroke-width:1px
+            
+            style C1 fill:#e6f3f5,stroke:#666,stroke-width:1px
+            style C2 fill:#e6f3f5,stroke:#666,stroke-width:1px
+            style C3 fill:#e6f3f5,stroke:#666,stroke-width:1px
+            
+            style D1 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D2 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D3 fill:#f0f5e6,stroke:#666,stroke-width:1px
+        </div>
+    </div>
+    
+    <div class="flow-chart-container">
+        <div class="mermaid">
+        flowchart LR
+            A[Framingham Dataset] -->|Load Data| B[Data Preprocessing]
+            B -->|Handle Missing Values| B1[Missing Value Imputation<br>median]
+            B1 -->|Feature Engineering| B2[Feature Scaling<br>StandardScaler]
+            B2 -->|Data Splitting| B3[70% Training<br>30% Testing]
+            
+            B3 -->|Apply Resampling| C1[Original<br>Imbalanced Dataset]
+            B3 -->|Apply Resampling| C2[SMOTE<br>Resampled Dataset]
+            B3 -->|Apply Resampling| C3[ADASYN<br>Resampled Dataset]
+            
+            C1 --> D1[Logistic Regression]
+            C1 --> D2[Random Forest]
+            C1 --> D3[XGBoost]
+            
+            C2 --> D4[Logistic Regression]
+            C2 --> D5[Random Forest]
+            C2 --> D6[XGBoost]
+            
+            C3 --> D7[Logistic Regression]
+            C3 --> D8[Random Forest]
+            C3 --> D9[XGBoost]
+            
+            D1 & D2 & D3 & D4 & D5 & D6 & D7 & D8 & D9 --> F[Performance Evaluation<br>Accuracy, Precision, Recall<br>F1-Score, ROC-AUC]
+            
+            style A fill:#f9d5e5,stroke:#333,stroke-width:2px
+            style B fill:#eeeeee,stroke:#333,stroke-width:1px
+            style B1 fill:#f5f5f5,stroke:#666,stroke-width:1px
+            style B2 fill:#f5f5f5,stroke:#666,stroke-width:1px
+            style B3 fill:#f5f5f5,stroke:#666,stroke-width:1px
+            
+            style C1 fill:#e6f3f5,stroke:#666,stroke-width:1px
+            style C2 fill:#e6f3f5,stroke:#666,stroke-width:1px
+            style C3 fill:#e6f3f5,stroke:#666,stroke-width:1px
+            
+            style D1 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D2 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D3 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D4 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D5 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D6 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D7 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D8 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            style D9 fill:#f0f5e6,stroke:#666,stroke-width:1px
+            
+            style F fill:#f0e6f3,stroke:#333,stroke-width:1px
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { useMaxWidth: false } });
+    </script>
+</body>
+</html>
